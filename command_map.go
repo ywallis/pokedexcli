@@ -1,15 +1,13 @@
 package main
 
 import (
-	"github.com/ywallis/pokedexcli/internal/pokeapi"
 	"fmt"
-	"github.com/ywallis/pokedexcli/internal/pokecache"
 )
 
 
-func commandMap(config *Config, cache *pokecache.Cache) error {
+func commandMap(config *Config) error {
 
-	data, err := pokeapi.FetchLocationAreas(config.Next, cache)
+	data, err := config.pokeapiClient.FetchLocationAreas(config.Next)
 
 	config.Next = data.Next
 	config.Previous = data.Previous
@@ -24,13 +22,13 @@ func commandMap(config *Config, cache *pokecache.Cache) error {
 
 }
 
-func commandMapPrevious(config *Config, cache *pokecache.Cache) error {
+func commandMapPrevious(config *Config) error {
 	if config.Previous == "" {
 		fmt.Println("you're on the first page")
 		return nil
 	}
 
-	data, err := pokeapi.FetchLocationAreas(config.Previous, cache)
+	data, err := config.pokeapiClient.FetchLocationAreas(config.Previous)
 
 	config.Next = data.Next
 	config.Previous = data.Previous

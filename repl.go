@@ -5,17 +5,14 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
-	"github.com/ywallis/pokedexcli/internal/pokecache"
+	"github.com/ywallis/pokedexcli/internal/pokeapi"
 )
 
-func startRepl() {
+func startRepl(config *Config) {
 	reader := bufio.NewScanner(os.Stdin)
-	commandConfig := Config{
-		Previous: "",
-		Next: "https://pokeapi.co/api/v2/location-area/",
-	}
-	cache := pokecache.NewCache(time.Duration(15) * time.Second)
+	config.Previous = ""
+	config.Next = "https://pokeapi.co/api/v2/location-area/"
+
 	for {
 		fmt.Print("Pokedex > ")
 		reader.Scan()
@@ -27,9 +24,9 @@ func startRepl() {
 
 		commandName := words[0]
 
-		command, exists := getCommands(&commandConfig, cache)[commandName]
+		command, exists := getCommands()[commandName]
 		if exists {
-			err := command.callback()
+			err := command.callback(config)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -50,35 +47,36 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func() error
+	callback    func(*Config) error
 }
 
 type Config struct {
-	Previous string
-	Next     string
+	Previous      string
+	Next          string
+	pokeapiClient *pokeapi.Client
 }
 
-func getCommands(config *Config, cache *pokecache.Cache) map[string]cliCommand {
+func getCommands() map[string]cliCommand {
 	return map[string]cliCommand{
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
-			callback:    func() error { return commandHelp(config, cache) },
+			callback:    commandHelp,
 		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
-			callback:    func() error { return commandExit(config) },
+			callback:    commandExit,
 		},
 		"map": {
 			name:        "map",
 			description: "Shows the next 20 map locations",
-			callback:    func() error { return commandMap(config, cache) },
+			callback:    commandMap,
 		},
 		"mapb": {
 			name:        "mapb",
 			description: "Shows the previous 20 map locations",
-			callback:    func() error { return commandMapPrevious(config, cache) },
+			callback:    commandMapPrevious,
 		},
 	}
 }
