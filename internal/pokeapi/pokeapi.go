@@ -3,20 +3,27 @@ package pokeapi
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
+	"github.com/ywallis/pokedexcli/internal/pokecache"
 	"io"
+	"net/http"
 )
 
-func FetchLocationAreas(url string) (Response, error) {
-	resp, err := http.Get(url)
-	if err != nil {
-		return Response{}, fmt.Errorf("failed to make request: %w", err)
-	}
-	defer resp.Body.Close()
+func FetchLocationAreas(url string, cache *pokecache.Cache) (Response, error) {
+	body, ok := cache.Get(url)
+	if !ok {
 
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return Response{}, fmt.Errorf("failed to read body: %w", err)
+		resp, err := http.Get(url)
+		if err != nil {
+			return Response{}, fmt.Errorf("failed to make request: %w", err)
+		}
+		defer resp.Body.Close()
+
+		bodybytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return Response{}, fmt.Errorf("failed to read body: %w", err)
+		}
+		body = bodybytes
+		cache.Add(url, body)
 	}
 
 	var data Response
@@ -26,4 +33,3 @@ func FetchLocationAreas(url string) (Response, error) {
 
 	return data, nil
 }
-

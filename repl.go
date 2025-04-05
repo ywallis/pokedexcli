@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
+	"github.com/ywallis/pokedexcli/internal/pokecache"
 )
 
 func startRepl() {
@@ -13,6 +15,7 @@ func startRepl() {
 		Previous: "",
 		Next: "https://pokeapi.co/api/v2/location-area/",
 	}
+	cache := pokecache.NewCache(time.Duration(15) * time.Second)
 	for {
 		fmt.Print("Pokedex > ")
 		reader.Scan()
@@ -24,7 +27,7 @@ func startRepl() {
 
 		commandName := words[0]
 
-		command, exists := getCommands(&commandConfig)[commandName]
+		command, exists := getCommands(&commandConfig, cache)[commandName]
 		if exists {
 			err := command.callback()
 			if err != nil {
@@ -55,12 +58,12 @@ type Config struct {
 	Next     string
 }
 
-func getCommands(config *Config) map[string]cliCommand {
+func getCommands(config *Config, cache *pokecache.Cache) map[string]cliCommand {
 	return map[string]cliCommand{
 		"help": {
 			name:        "help",
 			description: "Displays a help message",
-			callback:    func() error { return commandHelp(config) },
+			callback:    func() error { return commandHelp(config, cache) },
 		},
 		"exit": {
 			name:        "exit",
@@ -70,12 +73,12 @@ func getCommands(config *Config) map[string]cliCommand {
 		"map": {
 			name:        "map",
 			description: "Shows the next 20 map locations",
-			callback:    func() error { return commandMap(config) },
+			callback:    func() error { return commandMap(config, cache) },
 		},
 		"mapb": {
 			name:        "mapb",
 			description: "Shows the previous 20 map locations",
-			callback:    func() error { return commandMapPrevious(config) },
+			callback:    func() error { return commandMapPrevious(config, cache) },
 		},
 	}
 }
