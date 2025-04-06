@@ -5,7 +5,7 @@ import (
 )
 
 
-func commandMap(config *Config, _ string) error {
+func commandMap(config *Config, args ...string) error {
 
 	data, err := config.pokeapiClient.FetchLocationAreas(config.Next)
 
@@ -22,7 +22,7 @@ func commandMap(config *Config, _ string) error {
 
 }
 
-func commandMapPrevious(config *Config, _ string) error {
+func commandMapPrevious(config *Config, args ...string) error {
 	if config.Previous == "" {
 		fmt.Println("you're on the first page")
 		return nil

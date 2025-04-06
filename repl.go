@@ -22,17 +22,14 @@ func startRepl(config *Config) {
 			continue
 		}
 
-		var argument string
+		args := []string{}
 		commandName := words[0]
-		if len(words) < 2 {
-			argument = ""
-		} else {
-			argument = words[1]
-		}
+
+		if len(words) > 1 {args = words[1:]}
 
 		command, exists := getCommands()[commandName]
 		if exists {
-			err := command.callback(config, argument)
+			err := command.callback(config, args...)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -53,7 +50,7 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*Config, string) error
+	callback    func(*Config, ...string) error
 }
 
 type Config struct {

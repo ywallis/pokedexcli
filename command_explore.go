@@ -5,12 +5,13 @@ import (
 )
 
 
-func commandExplore(config *Config, area string) error {
+func commandExplore(config *Config, args ...string) error {
 
-	if area == "" {
+	if len(args) != 1 {
 		fmt.Println("missing area argument!")
 		return nil
 	}
+	area := args[0]
 	fmt.Printf("Exploring: %s\n", area)
 	url := "https://pokeapi.co/api/v2/location-area/" + area
 	data, err := config.pokeapiClient.FetchLocationData(url)
