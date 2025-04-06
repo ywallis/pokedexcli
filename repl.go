@@ -3,9 +3,9 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"github.com/ywallis/pokedexcli/internal/pokeapi"
 	"os"
 	"strings"
-	"github.com/ywallis/pokedexcli/internal/pokeapi"
 )
 
 func startRepl(config *Config) {
@@ -22,11 +22,17 @@ func startRepl(config *Config) {
 			continue
 		}
 
+		var argument string
 		commandName := words[0]
+		if len(words) < 2 {
+			argument = ""
+		} else {
+			argument = words[1]
+		}
 
 		command, exists := getCommands()[commandName]
 		if exists {
-			err := command.callback(config)
+			err := command.callback(config, argument)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -47,7 +53,7 @@ func cleanInput(text string) []string {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*Config) error
+	callback    func(*Config, string) error
 }
 
 type Config struct {
@@ -77,6 +83,11 @@ func getCommands() map[string]cliCommand {
 			name:        "mapb",
 			description: "Shows the previous 20 map locations",
 			callback:    commandMapPrevious,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Lists the names of all pokemons at a given location",
+			callback:    commandExplore,
 		},
 	}
 }
