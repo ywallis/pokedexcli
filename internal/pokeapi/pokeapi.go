@@ -57,3 +57,30 @@ func (c *Client) FetchLocationData(url string) (LocationArea, error) {
 
 	return data, nil
 }
+
+func (c *Client) FetchPokemonData(name string) (PokemonData, error){
+	endpoint := "https://pokeapi.co/api/v2/pokemon/"
+	fullUrl := endpoint + name
+	rawData, ok := c.cache.Get(fullUrl)
+	if !ok {
+		resp, err := c.httpClient.Get(fullUrl)
+		if err != nil {
+			return PokemonData{}, fmt.Errorf("failed to make request: %w", err)
+		}
+		defer resp.Body.Close()
+
+		bodybytes, err := io.ReadAll(resp.Body)
+		if err != nil {
+			return PokemonData{}, fmt.Errorf("failed to read body: %w", err)
+		}
+		rawData = bodybytes
+		c.cache.Add(fullUrl, rawData)
+	}
+	var data PokemonData
+	if err := json.Unmarshal(rawData, &data); err != nil {
+		return PokemonData{}, fmt.Errorf("failed to parse JSON: %w", err)
+	}
+
+	return data, nil
+
+}

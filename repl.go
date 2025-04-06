@@ -25,7 +25,9 @@ func startRepl(config *Config) {
 		args := []string{}
 		commandName := words[0]
 
-		if len(words) > 1 {args = words[1:]}
+		if len(words) > 1 {
+			args = words[1:]
+		}
 
 		command, exists := getCommands()[commandName]
 		if exists {
@@ -57,6 +59,7 @@ type Config struct {
 	Previous      string
 	Next          string
 	pokeapiClient *pokeapi.Client
+	pokedex       map[string]pokeapi.PokemonData
 }
 
 func getCommands() map[string]cliCommand {
@@ -66,10 +69,20 @@ func getCommands() map[string]cliCommand {
 			description: "Displays a help message",
 			callback:    commandHelp,
 		},
+		"catch": {
+			name:        "catch",
+			description: "Try and capture a Pokemon",
+			callback:    commandCatch,
+		},
 		"exit": {
 			name:        "exit",
 			description: "Exit the Pokedex",
 			callback:    commandExit,
+		},
+		"explore": {
+			name:        "explore",
+			description: "Lists the names of all pokemons at a given location",
+			callback:    commandExplore,
 		},
 		"map": {
 			name:        "map",
@@ -80,11 +93,6 @@ func getCommands() map[string]cliCommand {
 			name:        "mapb",
 			description: "Shows the previous 20 map locations",
 			callback:    commandMapPrevious,
-		},
-		"explore": {
-			name:        "explore",
-			description: "Lists the names of all pokemons at a given location",
-			callback:    commandExplore,
 		},
 	}
 }
